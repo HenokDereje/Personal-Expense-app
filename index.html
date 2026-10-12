@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A clean, responsive Personal Expense Tracker built with semantic HTML5, CSS3, and vanilla JavaScript.">
+  <title>Personal Expense Tracker | Portfolio Project</title>
+  
+  <!-- Favicon using inline SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💳</text></svg>">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Application Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-icon" aria-hidden="true">📊</div>
+        <div class="brand-text">
+          <h1 class="brand-title">ExpenseWise</h1>
+          <p class="brand-subtitle">Personal Expense Tracker &amp; Financial Overview</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div class="date-badge" id="current-date-badge" aria-label="Today's date">
+          <span class="badge-icon" aria-hidden="true">📅</span>
+          <span id="date-display">Today</span>
+        </div>
+        <div class="status-pill status-ready" id="app-status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="app-status-text">Active Tracker</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Content -->
+  <main class="main-container">
+    <!-- Financial Metric Summary Cards -->
+    <section class="summary-section" aria-label="Spending Summary">
+      <div class="summary-grid">
+        <!-- Card 1: Total Spending -->
+        <article class="metric-card metric-total">
+          <div class="metric-header">
+            <span class="metric-label">Total Spending</span>
+            <span class="metric-icon" aria-hidden="true">💰</span>
+          </div>
+          <div class="metric-value" id="total-spending">$0.00</div>
+          <p class="metric-caption">Cumulative across all records</p>
+        </article>
+
+        <!-- Card 2: Transaction Count -->
+        <article class="metric-card metric-count">
+          <div class="metric-header">
+            <span class="metric-label">Total Transactions</span>
+            <span class="metric-icon" aria-hidden="true">🧾</span>
+          </div>
+          <div class="metric-value" id="transaction-count">0</div>
+          <p class="metric-caption">Logged entries</p>
+        </article>
+
+        <!-- Card 3: Top Spending Category -->
+        <article class="metric-card metric-top">
+          <div class="metric-header">
+            <span class="metric-label">Top Category</span>
+            <span class="metric-icon" aria-hidden="true">🏆</span>
+          </div>
+          <div class="metric-value metric-text-highlight" id="top-category">—</div>
+          <p class="metric-caption" id="top-category-caption">Highest cumulative expense</p>
+        </article>
+
+        <!-- Card 4: Average Expense -->
+        <article class="metric-card metric-average">
+          <div class="metric-header">
+            <span class="metric-label">Average Expense</span>
+            <span class="metric-icon" aria-hidden="true">📈</span>
+          </div>
+          <div class="metric-value" id="average-expense">$0.00</div>
+          <p class="metric-caption">Per transaction average</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Two-Column Dashboard Layout -->
+    <div class="dashboard-layout">
+      <!-- Left Column: Add / Edit Expense Form -->
+      <section class="card form-card" aria-labelledby="form-card-title">
+        <header class="card-header">
+          <div class="card-title-group">
+            <h2 id="form-card-title" class="card-title">Add New Expense</h2>
+            <p id="form-card-subtitle" class="card-subtitle">Log your daily transactions to keep your budget accurate</p>
+          </div>
+          <span class="badge-tag" id="form-mode-tag">New Entry</span>
+        </header>
+
+        <!-- Notification / Feedback Banner -->
+        <div id="form-notification" class="notification-banner" role="status" aria-live="polite" hidden></div>
+
+        <!-- Semantic Form -->
+        <form id="expense-form" class="expense-form" novalidate>
+          <!-- Description Field -->
+          <div class="form-group">
+            <label for="expense-description" class="form-label">
+              Description <span class="required-indicator" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="text"
+              id="expense-description"
+              name="description"
+              class="form-control"
+              placeholder="e.g., Weekly groceries at Trader Joe's"
+              maxlength="100"
+              required
+              autocomplete="off"
+            >
+            <span class="form-hint">Brief explanation of what was purchased (2–100 chars).</span>
+            <span class="field-error" id="description-error" aria-live="polite"></span>
+          </div>
+
+          <!-- Amount Field -->
+          <div class="form-group">
+            <label for="expense-amount" class="form-label">
+              Amount ($) <span class="required-indicator" aria-hidden="true">*</span>
+            </label>
+            <div class="input-prefix-wrapper">
+              <span class="input-prefix" aria-hidden="true">$</span>
+              <input
+                type="number"
+                id="expense-amount"
+                name="amount"
+                class="form-control input-with-prefix"
+                placeholder="0.00"
+                step="0.01"
+                min="0.01"
+                required
+              >
+            </div>
+            <span class="form-hint">Enter the cost in USD (e.g. 24.50).</span>
+            <span class="field-error" id="amount-error" aria-live="polite"></span>
+          </div>
+
+          <!-- Category Field -->
+          <div class="form-group">
+            <label for="expense-category" class="form-label">
+              Category <span class="required-indicator" aria-hidden="true">*</span>
+            </label>
+            <select id="expense-category" name="category" class="form-control" required>
+              <option value="" disabled selected>Select a spending category</option>
+              <option value="Food & Dining">🍔 Food &amp; Dining</option>
+              <option value="Transportation">🚗 Transportation</option>
+              <option value="Housing & Utilities">💡 Housing &amp; Utilities</option>
+              <option value="Entertainment">🎬 Entertainment</option>
+              <option value="Shopping">🛍️ Shopping</option>
+              <option value="Healthcare">🩺 Healthcare</option>
+              <option value="Education">📚 Education</option>
+              <option value="Personal Care">✨ Personal Care</option>
+              <option value="Other">📦 Other</option>
+            </select>
+            <span class="form-hint">Categorizing helps uncover spending habits.</span>
+            <span class="field-error" id="category-error" aria-live="polite"></span>
+          </div>
+
+          <!-- Date Field -->
+          <div class="form-group">
+            <label for="expense-date" class="form-label">
+              Date <span class="required-indicator" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="date"
+              id="expense-date"
+              name="date"
+              class="form-control"
+              required
+            >
+            <span class="form-hint">When the transaction took place.</span>
+            <span class="field-error" id="date-error" aria-live="polite"></span>
+          </div>
+
+          <!-- Form Buttons -->
+          <div class="form-actions">
+            <button type="submit" id="submit-expense-btn" class="btn btn-primary">
+              <span class="btn-icon" id="submit-btn-icon" aria-hidden="true">➕</span>
+              <span id="submit-btn-text">Add Expense</span>
+            </button>
+            <button type="button" id="cancel-edit-btn" class="btn btn-secondary" hidden>
+              Cancel Edit
+            </button>
+            <button type="reset" id="reset-form-btn" class="btn btn-secondary">
+              Reset Form
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Right Column: Analytics & Transaction List -->
+      <div class="dashboard-content">
+        <!-- Category Breakdown Card -->
+        <section class="card breakdown-card" aria-labelledby="breakdown-card-title">
+          <header class="card-header">
+            <div class="card-title-group">
+              <h2 id="breakdown-card-title" class="card-title">Spending Breakdown</h2>
+              <p class="card-subtitle">Distribution of expenditures by category</p>
+            </div>
+            <span class="badge-tag">Analysis</span>
+          </header>
+
+          <div id="breakdown-container" class="breakdown-container">
+            <!-- Empty state for Category Breakdown -->
+            <div class="breakdown-empty-state" id="breakdown-empty">
+              <div class="breakdown-empty-icon" aria-hidden="true">📊</div>
+              <p class="breakdown-empty-text">No spending breakdown available yet.</p>
+              <span class="breakdown-empty-subtext">Add expenses to see proportions by category.</span>
+            </div>
+            <!-- Dynamic Category Breakdown List -->
+            <div id="breakdown-list" class="breakdown-list" hidden></div>
+          </div>
+        </section>
+
+        <!-- Transaction History Card -->
+        <section class="card transactions-card" aria-labelledby="transactions-card-title">
+          <header class="card-header transactions-header">
+            <div class="card-title-group">
+              <h2 id="transactions-card-title" class="card-title">Transaction History</h2>
+              <p class="card-subtitle">Review, search, and manage recorded transactions</p>
+            </div>
+            <span class="badge-tag" id="transactions-count-badge">0 records</span>
+          </header>
+
+          <!-- Search & Multi-Filter Controls Toolbar -->
+          <div class="table-toolbar" role="search" aria-label="Filter expenses">
+            <!-- Search by description -->
+            <div class="search-input-wrapper">
+              <label for="search-input" class="sr-only">Search transactions by description</label>
+              <span class="search-icon" aria-hidden="true">🔍</span>
+              <input
+                type="search"
+                id="search-input"
+                class="form-control toolbar-input"
+                placeholder="Search description..."
+                aria-label="Search transactions by description"
+              >
+            </div>
+
+            <!-- Filter Controls Grid -->
+            <div class="filter-controls-group">
+              <!-- Category Filter -->
+              <div class="filter-item">
+                <label for="filter-category" class="filter-label">Category</label>
+                <select id="filter-category" class="form-control toolbar-select" aria-label="Filter transactions by category">
+                  <option value="all">All Categories</option>
+                  <option value="Food & Dining">Food &amp; Dining</option>
+                  <option value="Transportation">Transportation</option>
+                  <option value="Housing & Utilities">Housing &amp; Utilities</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Healthcare">Healthcare</option>
+                  <option value="Education">Education</option>
+                  <option value="Personal Care">Personal Care</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <!-- Date Range Filter: Start Date -->
+              <div class="filter-item date-filter-item">
+                <label for="filter-date-start" class="filter-label">From</label>
+                <input
+                  type="date"
+                  id="filter-date-start"
+                  class="form-control toolbar-input-date"
+                  aria-label="Filter transactions starting from date"
+                >
+              </div>
+
+              <!-- Date Range Filter: End Date -->
+              <div class="filter-item date-filter-item">
+                <label for="filter-date-end" class="filter-label">To</label>
+                <input
+                  type="date"
+                  id="filter-date-end"
+                  class="form-control toolbar-input-date"
+                  aria-label="Filter transactions up to date"
+                >
+              </div>
+
+              <!-- Sort Dropdown -->
+              <div class="filter-item">
+                <label for="sort-expenses" class="filter-label">Sort By</label>
+                <select id="sort-expenses" class="form-control toolbar-select" aria-label="Sort transactions">
+                  <option value="date-desc">Newest Date</option>
+                  <option value="date-asc">Oldest Date</option>
+                  <option value="amount-desc">Highest Amount</option>
+                  <option value="amount-asc">Lowest Amount</option>
+                  <option value="desc-asc">Description (A-Z)</option>
+                </select>
+              </div>
+
+              <!-- Reset Filters Button -->
+              <div class="filter-item filter-btn-item">
+                <button type="button" id="clear-filters-btn" class="btn btn-outline" title="Reset all filters">
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Table / Container -->
+          <div class="table-responsive">
+            <table class="transactions-table" id="transactions-table" aria-label="List of expenses">
+              <thead>
+                <tr>
+                  <th scope="col" class="th-date">Date</th>
+                  <th scope="col" class="th-desc">Description</th>
+                  <th scope="col" class="th-cat">Category</th>
+                  <th scope="col" class="th-amount text-right">Amount</th>
+                  <th scope="col" class="th-actions text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-table-body">
+                <!-- Dynamically rendered via script.js -->
+              </tbody>
+            </table>
+
+            <!-- Empty State 1: No Expenses Ever Created -->
+            <div id="transactions-empty-state" class="empty-state" role="status">
+              <div class="empty-state-icon" aria-hidden="true">🧾</div>
+              <h3 class="empty-state-title">No expenses recorded yet</h3>
+              <p class="empty-state-description">
+                Your transaction ledger is completely empty. Fill out the "Add New Expense" form to start recording your spending and seeing analytics.
+              </p>
+              <div class="empty-state-tip">
+                <span class="tip-badge">Tip</span>
+                <span>All records are safely stored locally in your browser so they remain when you refresh.</span>
+              </div>
+            </div>
+
+            <!-- Empty State 2: Filters Resulted in Zero Matches -->
+            <div id="no-results-state" class="empty-state" role="status" hidden>
+              <div class="empty-state-icon" aria-hidden="true">🔍</div>
+              <h3 class="empty-state-title">No matching transactions found</h3>
+              <p class="empty-state-description">
+                No recorded expenses match your current search and filter combination. Try adjusting your search term, category, or date range.
+              </p>
+              <button type="button" id="empty-clear-filters-btn" class="btn btn-secondary">
+                Reset All Filters
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Application Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p class="footer-text">
+        <strong>ExpenseWise</strong> &mdash; Built with semantic HTML5, CSS3, &amp; Vanilla JavaScript.
+      </p>
+      <p class="footer-meta">
+        Created for Software Engineering Bootcamp Application Portfolio. Zero external frameworks, libraries, or backend dependencies.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script src="script.js"></script>
+</body>
+</html>
